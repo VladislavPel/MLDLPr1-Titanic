@@ -32,7 +32,7 @@ class TitanicDNN(nn.Module):
         layers.append(nn.Linear(prev, 1))
         self.net = nn.Sequential(*layers)
     def forward(self, x):
-        return self.net.squeeze(-1)
+        return self.net(x).squeeze(-1)
 
 def create_model(name:str, config):
     params = OmegaConf.to_container(config.models[name], resolve=True)
@@ -45,7 +45,7 @@ def create_model(name:str, config):
                  'decision_tree': lambda: DecisionTreeClassifier(**params),
                  'random_forest': lambda: RandomForestClassifier(**params),
                  'gradient_boosting': lambda: GradientBoostingClassifier(**params),
-                 'xgboost': lambda: XGBClassifier(**params),
+                 'xgb': lambda: XGBClassifier(**params),
                  'lightgbm': lambda: LGBMClassifier(**params),
                  'catboost': lambda: CatBoostClassifier(**params),
                  }

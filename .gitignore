@@ -1,3 +1,8 @@
-gender_submission.csv
 __pycache__/
 *.pyc
+.ipynb_checkpoints/
+data/*.csv
+results/*.csv
+results/*.json
+sh.py
+catboost_info/

@@ -15,7 +15,8 @@ def main():
 
     train, test = load_data(config)
     X_train, y_train, X_test, test_ids = prepare_data(train, test, config)
-       
+    
+
     if model_name == "dnn":
         results = train_dnn(X_train, y_train, config)
         model = results["model"]

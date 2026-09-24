@@ -2,10 +2,10 @@ from omegaconf import OmegaConf
 
 config = {
     'general': {
-        'experiment_name': 'titanic_lasso',
-        'experiment_id': 3,       
+        #'experiment_name': 'titanic_lasso',
+        'experiment_id': 19,       
         'seed': 42,
-        'active': 'lasso',         
+        'active': 'dnn',         
     },
 
     'hyperparams': {
@@ -70,8 +70,8 @@ config = {
             'penalty': 'elasticnet',
             'solver': 'saga',
             'l1_ratio': 0.5,
-            'C': 1.0,
-            'max_iter': 1000,
+            'C': 100.0,
+            'max_iter': 10000,
             'random_state': '${general.seed}',
         },
 
@@ -82,7 +82,7 @@ config = {
         },
 
         'decision_tree': {
-            'max_depth': 5,
+            'max_depth': '${hyperparams.max_depth}',
             'random_state': '${general.seed}',
         },
         'random_forest': {
@@ -115,15 +115,15 @@ config = {
             'learning_rate': '${hyperparams.learning_rate}',
             'subsample': '${hyperparams.subsample}',
             'colsample_bytree': '${hyperparams.colsample_bytree}',
-            'verbose': '${hyperparams.verbose}',
+            'verbose': -1,
             'random_state': '${general.seed}',
         },
 
         'dnn': {
-            'hidden_layers': [128, 64, 32],
-            'dropout': 0.3,
+            'hidden_layers': [ 64, 32],
+            'dropout': 0.4,
             'batch_size': 32,
-            'epochs': 100,
+            'epochs': 50,
             'learning_rate': '${hyperparams.learning_rate}',
             'use_batchnorm': True,
             'optimizer': 'adam',
