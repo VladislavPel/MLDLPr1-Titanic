@@ -1,1 +1,3 @@
 gender_submission.csv
+__pycache__/
+*.pyc

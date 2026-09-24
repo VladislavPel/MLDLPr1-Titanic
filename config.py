@@ -2,10 +2,12 @@ from omegaconf import OmegaConf
 
 config = {
     'general': {
-        'experiment_name': 'titanic_full_exp',
+        'experiment_name': 'titanic_lasso',
+        'experiment_id': 3,       
         'seed': 42,
+        'active': 'lasso',         
     },
-    
+
     'hyperparams': {
         'learning_rate': 0.05,
         'n_estimators': 300,
@@ -18,9 +20,7 @@ config = {
     'paths': {
         'train_csv': 'data/train.csv',
         'test_csv': 'data/test.csv',
-        'baseline_submission_csv': 'results/baseline_submission.csv',
-        'metrics_json': 'results/metrics.json',
-        'best_submission_csv': 'results/best_submission.csv',
+        'gender_submission_csv': 'results/gender_submission.csv',
     },
 
     'preprocessing': {
@@ -32,72 +32,7 @@ config = {
             'Dr': 'Mr', 'Major': 'Mr', 'Lady': 'Mrs',
             'Countess': 'Mrs', 'Jonkheer': 'Mr', 'Col': 'Mr',
             'Rev': 'Mr', 'Capt': 'Mr', 'Sir': 'Mr', 'Don': 'Mr',
-        },
-    },
-
-    'models': {
-        'run_baseline': True,
-        'run_logistic_regression': True,
-        'run_lasso': True,
-        'run_ridge': True,
-        'run_elasticnet': True,
-        'run_knn': True,
-        'run_decision_tree': True,
-        'run_random_forest': True,
-        'run_xgb': True,
-        'run_catboost': True,
-        'run_lightgbm': True,
-        'run_dnn': True,
-
-        
-        'baseline_params': {'C': 1.0, 'max_iter': 1000},
-        'lasso_params': {'alpha': 1.0, 'max_iter': 1000},
-        'ridge_params': {'alpha': 1.0, 'max_iter': 1000},
-        'elasticnet_params': {'alpha': 1.0, 'l1_ratio': 0.5, 'max_iter': 1000},
-
-        'knn_params': {'n_neighbors': 5, 'weights': 'uniform', 'metric': 'minkowski'},
-
-        'decision_tree_params': {'max_depth': 5, 'random_state': '${general.seed}'},
-        'random_forest_params': {
-            'n_estimators': '${hyperparams.n_estimators}',
-            'max_depth': '${hyperparams.max_depth}',
-            'random_state': '${general.seed}'
-        },
-
-        'xgb_params': {
-            'n_estimators': '${hyperparams.n_estimators}',
-            'max_depth': '${hyperparams.max_depth}',
-            'learning_rate': '${hyperparams.learning_rate}',
-            'subsample': '${hyperparams.subsample}',
-            'colsample_bytree': '${hyperparams.colsample_bytree}',
-            'verbose': '${hyperparams.verbose}',
-            'random_state': '${general.seed}',
-        },
-        'catboost_params': {
-            'iterations': '${hyperparams.n_estimators}',
-            'depth': '${hyperparams.max_depth}',
-            'learning_rate': '${hyperparams.learning_rate}',
-            'verbose': '${hyperparams.verbose}',
-            'random_state': '${general.seed}',
-        },
-        'lgbm_params': {
-            'n_estimators': '${hyperparams.n_estimators}',
-            'max_depth': '${hyperparams.max_depth}',
-            'learning_rate': '${hyperparams.learning_rate}',
-            'subsample': '${hyperparams.subsample}',
-            'colsample_bytree': '${hyperparams.colsample_bytree}',
-            'verbose': '${hyperparams.verbose}',
-            'random_state': '${general.seed}',
-        },
-
-        'dnn_params': {
-            'hidden_layers': [128, 64, 32],
-            'dropout': 0.3,
-            'batch_size': 32,
-            'epochs': 100,
-            'learning_rate': '${hyperparams.learning_rate}',
-            'use_batchnorm': True,
-            'optimizer': 'adam', # или 'sgd'
+            'Dona': 'Mrs',
         },
     },
 
@@ -106,10 +41,94 @@ config = {
         'debug': False,
         'number_of_train_debug_samples': 100,
     },
-    
+
     'logging': {
         'prints': True,
-    }
+    },
+
+    'models': {
+        'logistic_regression': {
+            'penalty': 'l2',
+            'C': 1.0,
+            'max_iter': 1000,
+            'random_state': '${general.seed}',
+        },
+        'lasso': {
+            'penalty': 'l1',
+            'solver': 'liblinear',
+            'C': 1.0,
+            'max_iter': 1000,
+            'random_state': '${general.seed}',
+        },
+        'ridge': {
+            'penalty': 'l2',
+            'C': 0.1,
+            'max_iter': 1000,
+            'random_state': '${general.seed}',
+        },
+        'elasticnet': {
+            'penalty': 'elasticnet',
+            'solver': 'saga',
+            'l1_ratio': 0.5,
+            'C': 1.0,
+            'max_iter': 1000,
+            'random_state': '${general.seed}',
+        },
+
+        'knn': {
+            'n_neighbors': 5,
+            'weights': 'uniform',
+            'metric': 'minkowski',
+        },
+
+        'decision_tree': {
+            'max_depth': 5,
+            'random_state': '${general.seed}',
+        },
+        'random_forest': {
+            'n_estimators': '${hyperparams.n_estimators}',
+            'max_depth': '${hyperparams.max_depth}',
+            'random_state': '${general.seed}',
+        },
+
+        'xgb': {
+            'n_estimators': '${hyperparams.n_estimators}',
+            'max_depth': '${hyperparams.max_depth}',
+            'learning_rate': '${hyperparams.learning_rate}',
+            'subsample': '${hyperparams.subsample}',
+            'colsample_bytree': '${hyperparams.colsample_bytree}',
+            'verbosity': 0,
+            'random_state': '${general.seed}',
+            'use_label_encoder': False,
+            'eval_metric': 'logloss',
+        },
+        'catboost': {
+            'iterations': '${hyperparams.n_estimators}',
+            'depth': '${hyperparams.max_depth}',
+            'learning_rate': '${hyperparams.learning_rate}',
+            'verbose': '${hyperparams.verbose}',
+            'random_state': '${general.seed}',
+        },
+        'lightgbm': {
+            'n_estimators': '${hyperparams.n_estimators}',
+            'max_depth': '${hyperparams.max_depth}',
+            'learning_rate': '${hyperparams.learning_rate}',
+            'subsample': '${hyperparams.subsample}',
+            'colsample_bytree': '${hyperparams.colsample_bytree}',
+            'verbose': '${hyperparams.verbose}',
+            'random_state': '${general.seed}',
+        },
+
+        'dnn': {
+            'hidden_layers': [128, 64, 32],
+            'dropout': 0.3,
+            'batch_size': 32,
+            'epochs': 100,
+            'learning_rate': '${hyperparams.learning_rate}',
+            'use_batchnorm': True,
+            'optimizer': 'adam',
+        },
+    },
 }
 
 config = OmegaConf.create(config)

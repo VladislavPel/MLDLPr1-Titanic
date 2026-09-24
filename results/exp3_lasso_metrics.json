@@ -1,0 +1,13 @@
+{
+  "experiment_id": 3,
+  "model_name": "lasso",
+  "cv_mean": 0.8350134957002071,
+  "cv_std": 0.009180059625489307,
+  "params": {
+    "penalty": "l1",
+    "solver": "liblinear",
+    "C": 1.0,
+    "max_iter": 1000,
+    "random_state": 42
+  }
+}
