@@ -3,9 +3,9 @@ from omegaconf import OmegaConf
 config = {
     'general': {
         #'experiment_name': 'titanic_lasso',
-        'experiment_id': 19,       
+        'experiment_id': 23,       
         'seed': 42,
-        'active': 'dnn',         
+        'active': 'ensemble_voting',         
     },
 
     'hyperparams': {
@@ -127,6 +127,21 @@ config = {
             'learning_rate': '${hyperparams.learning_rate}',
             'use_batchnorm': True,
             'optimizer': 'adam',
+        },
+        'ensemble_avg': {
+            'models': ['xgb', 'catboost', 'lightgbm'],
+            'weights': [1.0, 1.0, 1.0], 
+        },
+        
+        'ensemble_voting': {
+            'models': ['xgb', 'catboost', 'lightgbm'],
+            'weights': [1.0, 1.0, 1.0],
+        },
+        
+        'ensemble_stacking': {
+            'base_models': ['xgb', 'catboost', 'lightgbm'],
+            'meta_model': 'ridge',  
+            'cv_folds': 5,
         },
     },
 }

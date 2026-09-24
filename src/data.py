@@ -10,6 +10,8 @@ def load_data(cfg):
 
 
 def prepare_data(train, test, cfg):
+    '''Подготовка загруженных данных, см. preprocessing'''
+
     stats = get_train_stats(train, cfg.preprocessing.title_mapping)
     frequent_tickets = get_frequent_tickets(train, cfg.preprocessing.min_ticket_counts)
 

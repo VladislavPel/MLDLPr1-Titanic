@@ -14,6 +14,7 @@ from catboost import CatBoostClassifier
 from omegaconf import OmegaConf
 
 def get_baseline_model(test_df: pd.DataFrame) -> pd.DataFrame:
+    ''' Правило женщина - выжила '''
     predictions = (test_df['Sex'] == 'female').astype(int)
     return pd.DataFrame({'PassengerId': test_df['PassengerId'], 'Survived': predictions})
     
@@ -173,6 +174,7 @@ def train_dnn(X_train, y_train, config):
 
 
 def evaluate_cv(model, X, y, cfg):
+    ''' Кросвал '''
     cv = StratifiedKFold(
         n_splits=cfg.training.cv_folds, shuffle=True, random_state=cfg.general.seed
     )
@@ -187,3 +189,92 @@ def predict(model, X_test, is_nn=False):
             probs = torch.sigmoid(model(X_t)).numpy()
         return (probs >= 0.5).astype(int)
     return model.predict(X_test)
+
+def predict_proba(model, X_test, is_nn=False):
+    """
+    Возвращает вероятности класса 1.
+    """
+    if is_nn:
+        X_t = torch.FloatTensor(X_test.values if isinstance(X_test, pd.DataFrame) else X_test)
+        model.eval()
+        with torch.no_grad():
+            probs = torch.sigmoid(model(X_t)).numpy()
+        return probs
+    return model.predict_proba(X_test)[:, 1]
+
+
+def create_ensemble_predictions(X_test, trained_models_info, weights=None):
+    """
+    Усредняет вероятности от нескольких обученных моделей.
+    
+    """
+    if weights is None:
+        weights = [1.0] * len(trained_models_info)
+    
+    total_weight = sum(weights)
+    weights = [w / total_weight for w in weights]
+    
+    avg_proba = np.zeros(X_test.shape[0])
+    for info, w in zip(trained_models_info, weights):
+        proba = predict_proba(info['model'], X_test, is_nn=info['is_nn'])
+        avg_proba += w * proba
+    
+    return (avg_proba >= 0.5).astype(int)
+
+
+def create_voting_predictions(X_test, trained_models_info, weights=None):
+    """
+    Hard Voting: каждая модель голосует за класс, выбирается большинство.
+    
+    """
+    if weights is None:
+        weights = [1.0] * len(trained_models_info)
+    
+    votes = np.zeros(X_test.shape[0])
+    for info, w in zip(trained_models_info, weights):
+        pred = predict(info['model'], X_test, is_nn=info['is_nn'])
+        votes += w * pred
+    
+    threshold = sum(weights) / 2
+    return (votes >= threshold).astype(int)
+
+
+def create_stacking_predictions(X_train, y_train, X_test, base_model_factories, meta_model, cv=5):
+    """
+    Stacking
+    
+    """
+    from sklearn.model_selection import StratifiedKFold
+    
+    n_samples = X_train.shape[0]
+    n_base_models = len(base_model_factories)
+    
+    oof_preds = np.zeros((n_samples, n_base_models))
+    test_preds = np.zeros((X_test.shape[0], n_base_models))
+    
+    kf = StratifiedKFold(n_splits=cv, shuffle=True, random_state=42)
+    
+    print(f"   Training {n_base_models} base models with {cv}-fold CV for stacking...")
+    
+    for i, factory in enumerate(base_model_factories):
+        test_fold_preds = np.zeros(X_test.shape[0])
+        
+        for fold, (train_idx, val_idx) in enumerate(kf.split(X_train, y_train)):
+            X_tr, X_val = X_train.iloc[train_idx], X_train.iloc[val_idx]
+            y_tr, y_val = y_train.iloc[train_idx], y_train.iloc[val_idx]
+            
+  
+            model = factory()
+            model.fit(X_tr, y_tr)
+
+            oof_preds[val_idx, i] = predict_proba(model, X_val)
+
+            test_fold_preds += predict_proba(model, X_test)
+        
+        test_preds[:, i] = test_fold_preds / cv
+        print(f"   Base model {i+1}/{n_base_models} done")
+    
+    print(f"   Training meta-model: {type(meta_model).__name__}")
+    meta_model.fit(oof_preds, y_train)
+    
+    return meta_model.predict(test_preds)
