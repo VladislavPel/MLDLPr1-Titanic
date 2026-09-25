@@ -3,15 +3,15 @@ from omegaconf import OmegaConf
 config = {
     'general': {
         #'experiment_name': 'titanic_lasso',
-        'experiment_id': 24,       
+        'experiment_id': 25,       
         'seed': 42,
         'active': 'xgb',         
     },
 
     'hyperparams': {
         'learning_rate': 0.05,
-        'n_estimators': 300,
-        'max_depth': 6,
+        'n_estimators': 200,
+        'max_depth': 4,
         'subsample': 0.8,
         'colsample_bytree': 0.8,
         'verbose': False,
@@ -101,6 +101,7 @@ config = {
             'random_state': '${general.seed}',
             'use_label_encoder': False,
             'eval_metric': 'logloss',
+            'min_child_weight': 3,
         },
         'catboost': {
             'iterations': '${hyperparams.n_estimators}',
@@ -108,6 +109,7 @@ config = {
             'learning_rate': '${hyperparams.learning_rate}',
             'verbose': '${hyperparams.verbose}',
             'random_state': '${general.seed}',
+            'l2_leaf_reg': 3,
         },
         'lightgbm': {
             'n_estimators': '${hyperparams.n_estimators}',
@@ -117,6 +119,7 @@ config = {
             'colsample_bytree': '${hyperparams.colsample_bytree}',
             'verbose': -1,
             'random_state': '${general.seed}',
+            'min_child_samples': 20,
         },
 
         'dnn': {
