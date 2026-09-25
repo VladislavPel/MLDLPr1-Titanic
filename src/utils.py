@@ -12,7 +12,7 @@ def get_frequent_tickets(df:pd.DataFrame, min_count:int = 10) -> list:
 def get_train_stats(train_df:pd.DataFrame, title_mapping:dict) -> dict:
     "Вычисляем медиану возраста по титулу на тренировочных данных"
     temp = train_df.copy()
-    temp['Initial'] = temp['Name'].str.extract(' ([A-Za-z]+)\.')
+    temp['Initial'] = temp['Name'].str.extract('([A-Za-z]+)\.')
     temp['Initial'] = temp['Initial'].replace(title_mapping)
 
     fare_medians = train_df.groupby('Pclass')['Fare'].median().to_dict()

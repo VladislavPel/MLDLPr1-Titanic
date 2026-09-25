@@ -16,6 +16,33 @@ def main():
     train, test = load_data(config)
     X_train, y_train, X_test, test_ids = prepare_data(train, test, config)
     
+    # === ДИАГНОСТИКА ===
+    print(f"\n{'='*50}")
+    print(f"X_train shape: {X_train.shape}")
+    print(f"X_test shape: {X_test.shape}")
+
+    # Проверка колонок
+    train_cols = set(X_train.columns)
+    test_cols = set(X_test.columns)
+
+    if train_cols == test_cols:
+        print(f"✅ Columns match: {len(train_cols)} features")
+    else:
+        print(f"❌ Columns MISMATCH!")
+        print(f"   Только в train: {train_cols - test_cols}")
+        print(f"   Только в test: {test_cols - train_cols}")
+
+    # Проверка NaN
+    print(f"\nNaN в X_train: {X_train.isnull().sum().sum()}")
+    print(f"NaN в X_test: {X_test.isnull().sum().sum()}")
+
+    if X_train.isnull().sum().sum() > 0:
+        print(f"   Колонки с NaN в train: {X_train.columns[X_train.isnull().any()].tolist()}")
+    if X_test.isnull().sum().sum() > 0:
+        print(f"   Колонки с NaN в test: {X_test.columns[X_test.isnull().any()].tolist()}")
+
+    print(f"{'='*50}\n")
+    # === КОНЕЦ ДИАГНОСТИКИ ===
 
 
     if model_name == "dnn":
@@ -90,8 +117,8 @@ def main():
             is_nn = False
 
     else:
-        model = create_model(model_name, cfg)
-        cv_mean, cv_std = evaluate_cv(model, X_train, y_train, cfg)
+        model = create_model(model_name, config)
+        cv_mean, cv_std = evaluate_cv(model, X_train, y_train, config)
         model.fit(X_train, y_train)
         is_nn = False
         trained_models = [{"model": model, "is_nn": False}]

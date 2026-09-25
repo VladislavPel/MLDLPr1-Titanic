@@ -3,9 +3,9 @@ from omegaconf import OmegaConf
 config = {
     'general': {
         #'experiment_name': 'titanic_lasso',
-        'experiment_id': 23,       
+        'experiment_id': 24,       
         'seed': 42,
-        'active': 'ensemble_voting',         
+        'active': 'xgb',         
     },
 
     'hyperparams': {
